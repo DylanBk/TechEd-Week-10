@@ -1,6 +1,6 @@
 'use client';
 
-import {Elements} from '@stripe/react-stripe';
+import {Elements} from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import convertToSubCurrency from '@/lib/convertToSubCurrency';
 
@@ -15,7 +15,7 @@ const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY);
 
 
 const Home = () => {
-    const amount = 4.99;
+    const amount: number = 4.99;
 
     return (
         <main>
@@ -26,7 +26,7 @@ const Home = () => {
                 options={{
                     mode: 'payment',
                     amount: convertToSubCurrency(amount),
-                    current: amount
+                    currency: 'gbp'
                 }}>
 
                 <Checkout amount={amount} />
