@@ -6,7 +6,7 @@ const Navbar = () => {
     const { translations } = useLanguage();
 
     return (
-        <nav className="space-y-2">Add commentMore actions
+        <nav className="space-y-2">
         <Link href="/" className="flex items-center space-x-4 p-3 text-gray-400 hover:text-white transition-all duration-300 cursor-pointer group relative overflow-hidden rounded-lg">
             <Home size={24} className="group-hover:scale-110 transition-transform duration-300 relative z-10" />
             <span className="text-xl font-medium relative z-10 group-hover:drop-shadow-[0_0_8px_rgba(147,51,234,0.5)] transition-all duration-300">{translations.navigation?.home}</span>
