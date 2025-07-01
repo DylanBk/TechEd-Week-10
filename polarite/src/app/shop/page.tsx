@@ -26,7 +26,7 @@ export default function ShopPage() {
         <div className="mb-12">
           <p className="text-white text-3xl lg:text-5xl font-extrabold">{translations.brand?.name}</p>
         </div>
-        
+
         <Navbar />
       </div>
 

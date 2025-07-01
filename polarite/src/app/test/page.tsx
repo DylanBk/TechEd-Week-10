@@ -7,6 +7,8 @@ import convertToSubCurrency from '@/lib/convertToSubCurrency';
 
 import Navbar from "@/components/Navbar";
 import Checkout from '@/components/Checkout';
+import { useLanguage } from '@/context/LanguageContext';
+import Link from 'next/link';
 
 if (process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY === undefined) {
     throw new Error('NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY is not defined');
@@ -16,12 +18,13 @@ const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
 
 export default function PolaritePaymentPage() {
   const amount: number = 7.99;
+  const { translations } = useLanguage();
 
   return (
     <div className="bg-bg w-screen h-screen flex overflow-hidden">
       <div className="w-1/5 h-screen bg-bg p-6 flex flex-col">
         <div className="mb-12">
-          <p className="text-white text-5xl font-extrabold">Polarite.</p>
+          <p className="text-white text-5xl font-extrabold">{translations.brand?.name}</p>
         </div>
 
         <Navbar />
