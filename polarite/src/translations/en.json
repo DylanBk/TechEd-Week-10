@@ -1,0 +1,55 @@
+{
+  "navigation": {
+    "home": "Home",
+    "account": "Account",
+    "shop": "Shop"
+  },
+  "brand": {
+    "name": "Polarite."
+  },
+  "shop": {
+    "title": "Shop",
+    "subtitle": "Energy Drinks",
+    "products": {
+      "monster_nitro": {
+        "name": "Monster Nitro",
+        "description": "560ml (Caffeine content, age 16+)",
+        "price": "£1.99"
+      },
+      "monster_ultra": {
+        "name": "Monster Ultra",
+        "description": "560ml (Caffeine content, age 16+)",
+        "price": "£1.75"
+      },
+      "monster_juiced": {
+        "name": "Monster Juiced",
+        "description": "560ml (Caffeine content, age 16+)",
+        "price": "£1.75"
+      }
+    },
+    "subscriptions": {
+      "title": "Subscriptions",
+      "polar_plus": {
+        "name": "Polar Plus",
+        "price": "£3.99",
+        "period": "/month",
+        "features": [
+          "Discounted products",
+          "Early access to new products"
+        ],
+        "note": "(Monthly subscription, minimum age 16+)"
+      },
+      "polar_premium": {
+        "name": "Polar Premium",
+        "price": "£7.99",
+        "period": "/month",
+        "features": [
+          "Everything from Polar Plus, and...",
+          "Free shipping & bigger product discounts",
+          "Become a seller and sell your own products"
+        ],
+        "note": "(Monthly subscription, minimum age 16+)"
+      }
+    }
+  }
+} 

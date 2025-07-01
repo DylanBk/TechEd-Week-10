@@ -1,0 +1,55 @@
+{
+  "navigation": {
+    "home": "ホーム",
+    "account": "アカウント",
+    "shop": "ショップ"
+  },
+  "brand": {
+    "name": "Polarite."
+  },
+  "shop": {
+    "title": "ショップ",
+    "subtitle": "エナジードリンク",
+    "products": {
+      "monster_nitro": {
+        "name": "モンスター・ニトロ",
+        "description": "560ml (カフェイン含有、16歳以上対象)",
+        "price": "£1.99"
+      },
+      "monster_ultra": {
+        "name": "モンスター・ウルトラ",
+        "description": "560ml (カフェイン含有、16歳以上対象)",
+        "price": "£1.75"
+      },
+      "monster_juiced": {
+        "name": "モンスター・ジュースド",
+        "description": "560ml (カフェイン含有、16歳以上対象)",
+        "price": "£1.75"
+      }
+    },
+    "subscriptions": {
+      "title": "サブスクリプション",
+      "polar_plus": {
+        "name": "ポーラープラス",
+        "price": "£3.99",
+        "period": "/月",
+        "features": [
+          "割引商品",
+          "新商品への早期アクセス"
+        ],
+        "note": "(月額サブスクリプション、16歳以上対象)"
+      },
+      "polar_premium": {
+        "name": "ポーラープレミアム",
+        "price": "£7.99",
+        "period": "/月",
+        "features": [
+          "Polar Plusのすべての特典、さらに...",
+          "送料無料＆商品の割引率アップ",
+          "販売者として自分の商品を出品可能"
+        ],
+        "note": "(月額サブスクリプション、16歳以上対象)"
+      }
+    }
+  }
+} 
