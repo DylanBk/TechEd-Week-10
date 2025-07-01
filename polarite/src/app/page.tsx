@@ -14,7 +14,7 @@ export default function HomePage() {
           <p className="text-white text-5xl geistSans font-extrabold">{translations.brand?.name}</p>
         </div>
         
-        <nav className="space-y-6">
+        <nav className="space-y-6"/>
           <Link href="/" className="flex items-center text-right justify-between text-3xl space-x-3 p-2 rounded-xl text-white bg-gray-900 cursor-pointer">
             <Home size={48} />
             <span className={language === 'ja' ? 'text-2xl' : ''}>{translations.navigation?.home}</span>
