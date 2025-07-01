@@ -7,6 +7,53 @@
   "brand": {
     "name": "Polarite."
   },
+  "pages": {
+    "home": {
+      "title": "ホーム"
+    },
+    "account": {
+      "title": "アカウントダッシュボード",
+      "subtitle": "Polariteアカウントを管理する",
+      "tabs": {
+        "overview": "概要",
+        "orders": "注文履歴",
+        "subscriptions": "サブスクリプション",
+        "settings": "設定"
+      },
+      "account_details": {
+        "title": "アカウント情報",
+        "email": "メールアドレス",
+        "member_since": "会員登録日",
+        "account_status": "アカウントの状態",
+        "status": {
+          "active": "アクティブ"
+        }
+      },
+      "account_summary": {
+        "title": "アカウント概要",
+        "total_orders": "総注文数",
+        "active_subscriptions": "アクティブなサブスクリプション",
+        "total_spent": "総支払額"
+      },
+      "orders": {
+        "order_number": "注文番号",
+        "quantity": "数量",
+        "total": "合計",
+        "status": {
+          "delivered": "配送済み",
+          "processing": "処理中",
+          "cancelled": "キャンセル済み"
+        }
+      },
+      "security": {
+        "title": "セキュリティ設定",
+        "change_password": {
+          "title": "パスワードを変更",
+          "description": "アカウントのパスワードを更新する"
+        }
+      }
+    }
+  },
   "shop": {
     "title": "ショップ",
     "subtitle": "エナジードリンク",
@@ -48,7 +95,9 @@
           "送料無料＆商品の割引率アップ",
           "販売者として自分の商品を出品可能"
         ],
-        "note": "(月額サブスクリプション、16歳以上対象)"
+        "note": "(月額サブスクリプション、16歳以上対象)",
+        "upgrade": "アップグレード",
+        "upgrade_description": "高度な機能にアップグレード"
       }
     }
   }
