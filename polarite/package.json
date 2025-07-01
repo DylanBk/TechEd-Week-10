@@ -12,6 +12,7 @@
     "@clerk/nextjs": "^6.23.2",
     "@stripe/react-stripe-js": "^3.7.0",
     "@stripe/stripe-js": "^7.4.0",
+    "@supabase/ssr": "^0.6.1",
     "@supabase/supabase-js": "^2.50.2",
     "@types/stripe": "^8.0.416",
     "geist": "^1.4.2",
