@@ -1,16 +1,20 @@
 'use client'
-import { useEffect, useState } from 'react'
-import { useSearchParams } from 'next/navigation'
-import Link from 'next/link'
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 
 export default function PaymentSuccessPage() {
   const searchParams = useSearchParams()
-  const [paymentDetails, setPaymentDetails] = useState<any>(null)
+  const [paymentDetails, setPaymentDetails] = useState<
+  | {
+    id: string,
+    status: string
+  }
+  | null>(null);
   
   // Get payment intent from URL params if redirected from Stripe
-  const payment_intent = searchParams.get('payment_intent')
-  const payment_intent_client_secret = searchParams.get('payment_intent_client_secret')
-  const redirect_status = searchParams.get('redirect_status')
+  const payment_intent = searchParams.get('payment_intent');
+  const redirect_status = searchParams.get('redirect_status');
 
   useEffect(() => {
     if (payment_intent && redirect_status === 'succeeded') {
@@ -31,12 +35,12 @@ export default function PaymentSuccessPage() {
             </svg>
           </div>
           
-          <h1 className="text-3xl font-bold text-white mb-3 bg-gradient-to-r from-white to-gray-200 bg-clip-text text-transparent">
+          <h1 className="text-3xl font-bold text-white mb-3 bg-gradient-to-r from-white to-gray-200 bg-clip-text">
             Payment Successful!
           </h1>
           <div className="text-2xl mb-4 animate-bounce">🎉</div>
           <p className="text-gray-300 leading-relaxed">
-            Thank you for your purchase. Your payment has been processed successfully and you'll receive a confirmation email shortly.
+            Thank you for your purchase. Your payment has been processed successfully and you&apos;ll receive a confirmation email shortly.
           </p>
         </div>
 
