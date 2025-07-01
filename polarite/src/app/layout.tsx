@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ClerkProvider } from '@clerk/nextjs'
 import { Suspense } from 'react'
+import { LanguageProvider } from '@/context/LanguageContext';
+import LanguageSelector from '@/components/LanguageSelector';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,9 +28,14 @@ export default function RootLayout({
 }) {
   return (
     <ClerkProvider>
-      <html lang="en" suppressHydrationWarning={true}>
-        <body>{children}</body>
-      </html>
+      <LanguageProvider>
+        <html lang="en" suppressHydrationWarning={true}>
+          <body>
+            {children}
+            <LanguageSelector />
+          </body>
+        </html>
+      </LanguageProvider>
     </ClerkProvider>
   )
 }
