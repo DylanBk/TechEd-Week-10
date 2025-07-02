@@ -48,7 +48,47 @@
           "Free shipping & bigger product discounts",
           "Become a seller and sell your own products"
         ],
-        "note": "(Monthly subscription, minimum age 16+)"
+        "note": "(Monthly subscription, minimum age 16+)",
+        "upgrade": "Upgrade to Premium",
+        "upgrade_description": "Get more benefits and exclusive features"
+      }
+    }
+  },
+  "pages": {
+    "home": {
+      "title": "Welcome to Polarite",
+      "subtitle": "Your Premium Energy Drink Destination"
+    },
+    "account": {
+      "title": "Account Dashboard",
+      "subtitle": "Manage your Polarite account",
+      "tabs": {
+        "overview": "Overview",
+        "orders": "Orders",
+        "subscriptions": "Subscriptions",
+        "settings": "Settings"
+      },
+      "account_details": {
+        "title": "Account Details",
+        "email": "Email Address",
+        "member_since": "Member Since",
+        "account_status": "Account Status",
+        "status": {
+          "active": "Active"
+        }
+      },
+      "account_summary": {
+        "title": "Account Summary",
+        "total_orders": "Total Orders",
+        "active_subscriptions": "Active Subscriptions",
+        "total_spent": "Total Spent"
+      },
+      "security": {
+        "title": "Security Settings",
+        "change_password": {
+          "title": "Change Password",
+          "description": "Update your account password"
+        }
       }
     }
   }
