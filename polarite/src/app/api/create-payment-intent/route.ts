@@ -19,28 +19,63 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     console.log('Request body:', body);
     
-    const { amount } = body;
+    const { amount, type = 'product', productId, productName } = body;
     
     // Validate amount
-    if (!amount || typeof amount !== 'number' || amount < 50) {
+    if (!amount || typeof amount !== 'number' || amount <= 0) {
       console.error('Invalid amount:', amount);
       return Response.json(
-        { error: 'Invalid amount. Minimum is 50 pence.' },
+        { error: 'Invalid amount provided.' },
         { status: 400 }
       );
     }
     
-    console.log('Creating Stripe payment intent for amount:', amount);
+    // Handle different payment types
+    let description = '';
+    let metadata = {};
     
+    if (type === 'subscription') {
+      // Subscription payment (existing logic)
+      if (amount !== 799) {
+        console.error('Invalid amount for subscription:', amount);
+        return Response.json(
+          { error: 'Invalid amount. Demo subscription is £7.99 (799 pence).' },
+          { status: 400 }
+        );
+      }
+      description = 'Demo Monthly Subscription - £7.99';
+      metadata = {
+        type: 'demo_subscription',
+        created_at: new Date().toISOString(),
+      };
+    } else if (type === 'product') {
+      // Product payment (energy drinks)
+      description = productName ? `Energy Drink - ${productName}` : 'Energy Drink Purchase';
+      metadata = {
+        type: 'product_purchase',
+        product_id: productId || 'unknown',
+        product_name: productName || 'Energy Drink',
+        created_at: new Date().toISOString(),
+      };
+    } else {
+      console.error('Invalid payment type:', type);
+      return Response.json(
+        { error: 'Invalid payment type. Must be "subscription" or "product".' },
+        { status: 400 }
+      );
+    }
+    
+    console.log(`Creating payment intent for ${type}...`);
+    
+    // Create payment intent
     const paymentIntent = await stripe.paymentIntents.create({
       amount: amount,
       currency: 'gbp',
       automatic_payment_methods: {
         enabled: true,
       },
-      metadata: {
-        created_at: new Date().toISOString(),
-      },
+      metadata: metadata,
+      description: description,
     });
 
     console.log('Payment intent created successfully:', paymentIntent.id);
@@ -48,11 +83,14 @@ export async function POST(req: NextRequest) {
     return Response.json({
       clientSecret: paymentIntent.client_secret,
       paymentIntentId: paymentIntent.id,
+      amount: amount,
+      currency: 'gbp',
+      status: 'ready',
+      type: type,
     });
   } catch (error) {
     console.error('Error creating payment intent:', error);
     
-    // Return more specific error information
     if (error instanceof Stripe.errors.StripeError) {
       return Response.json(
         { error: `Stripe error: ${error.message}` },

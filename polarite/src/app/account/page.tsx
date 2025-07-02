@@ -4,6 +4,7 @@ import { Settings, Crown, Shield, Check, Calendar, Mail } from "lucide-react";
 import { useState } from "react";
 import { useLanguage } from '@/context/LanguageContext';
 
+import Link from "next/link";
 import Navbar from "@/components/Navbar";
 
 
@@ -281,9 +282,9 @@ export default function AccountPage() {
                         ))}
                       </div>
                     </div>
-                    <button className="w-full bg-white hover:bg-gray-100 text-black py-3 px-6 rounded-xl font-bold transition-all">
+                    <Link href="/test" className="w-full bg-white hover:bg-gray-100 text-black py-3 px-6 rounded-xl font-bold transition-all">
                       {translations.shop?.subscriptions?.polar_premium?.upgrade}
-                    </button>
+                    </Link>
                   </div>
                 </div>
               </div>
