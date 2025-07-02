@@ -4,12 +4,18 @@ import { useLanguage } from '@/context/LanguageContext';
 import Image from 'next/image';
 import { Menu, X } from "lucide-react";
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 import Navbar from '@/components/Navbar';
 
 export default function ShopPage() {
   const { translations } = useLanguage();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const router = useRouter();
+
+  const handleBuyClick = (productId: string) => {
+    router.push(`/checkout?product=${productId}`);
+  };
 
   return (
     <div className="bg-black min-h-screen flex relative">
@@ -53,9 +59,15 @@ export default function ShopPage() {
               <p className="text-gray-400 text-sm text-center mb-4">
                 {translations.shop?.products.monster_nitro.description}
               </p>
-              <p className="text-xl lg:text-2xl font-bold text-white">
+              <p className="text-xl lg:text-2xl font-bold text-white mb-4">
                 {translations.shop?.products.monster_nitro.price}
               </p>
+              <button
+                onClick={() => handleBuyClick('monster_nitro')}
+                className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105"
+              >
+                Buy Now
+              </button>
             </div>
 
             <div className="bg-gray-800 rounded-xl p-4 lg:p-6 flex flex-col items-center">
@@ -73,9 +85,15 @@ export default function ShopPage() {
               <p className="text-gray-400 text-sm text-center mb-4">
                 {translations.shop?.products.monster_ultra.description}
               </p>
-              <p className="text-xl lg:text-2xl font-bold text-white">
+              <p className="text-xl lg:text-2xl font-bold text-white mb-4">
                 {translations.shop?.products.monster_ultra.price}
               </p>
+              <button
+                onClick={() => handleBuyClick('monster_ultra')}
+                className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105"
+              >
+                Buy Now
+              </button>
             </div>
 
             <div className="bg-gray-800 rounded-xl p-4 lg:p-6 flex flex-col items-center">
@@ -93,9 +111,15 @@ export default function ShopPage() {
               <p className="text-gray-400 text-sm text-center mb-4">
                 {translations.shop?.products.monster_juiced.description}
               </p>
-              <p className="text-xl lg:text-2xl font-bold text-white">
+              <p className="text-xl lg:text-2xl font-bold text-white mb-4">
                 {translations.shop?.products.monster_juiced.price}
               </p>
+              <button
+                onClick={() => handleBuyClick('monster_juiced')}
+                className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105"
+              >
+                Buy Now
+              </button>
             </div>
           </div>
 
@@ -164,4 +188,4 @@ export default function ShopPage() {
       )}
     </div>
   );
-} 
+}
