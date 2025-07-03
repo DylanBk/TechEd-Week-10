@@ -61,24 +61,24 @@
       "monster_nitro": {
         "name": "モンスター・ニトロ",
         "description": "560ml (カフェイン含有、16歳以上対象)",
-        "price": "£1.99"
+        "price": "¥358"
       },
       "monster_ultra": {
         "name": "モンスター・ウルトラ",
         "description": "560ml (カフェイン含有、16歳以上対象)",
-        "price": "£1.75"
+        "price": "¥315"
       },
       "monster_juiced": {
         "name": "モンスター・ジュースド",
         "description": "560ml (カフェイン含有、16歳以上対象)",
-        "price": "£1.75"
+        "price": "¥315"
       }
     },
     "subscriptions": {
       "title": "サブスクリプション",
       "polar_plus": {
         "name": "ポーラープラス",
-        "price": "£3.99",
+        "price": "¥718",
         "period": "/月",
         "features": [
           "割引商品",
@@ -88,7 +88,7 @@
       },
       "polar_premium": {
         "name": "ポーラープレミアム",
-        "price": "£7.99",
+        "price": "¥1,438",
         "period": "/月",
         "features": [
           "Polar Plusのすべての特典、さらに...",

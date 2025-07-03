@@ -1,6 +1,7 @@
 // src/app/api/create-payment-intent/route.ts
 import { NextRequest } from "next/server";
 import Stripe from "stripe";
+import { stripe as stripeClient } from '@/lib/stripe';
 
 console.log('Stripe Secret Key configured:', !!process.env.STRIPE_SECRET_KEY);
 
@@ -19,16 +20,27 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     console.log('Request body:', body);
     
-    const { amount, type = 'product', productId, productName } = body;
+    const { amount, type = 'product', productId, productName, currency = 'gbp' } = body;
     
-    // Validate amount
+    // Validate inputs
     if (!amount || typeof amount !== 'number' || amount <= 0) {
       console.error('Invalid amount:', amount);
       return Response.json(
-        { error: 'Invalid amount provided.' },
+        { error: 'Invalid amount provided' },
         { status: 400 }
       );
     }
+
+    if (!currency || (currency !== 'gbp' && currency !== 'jpy')) {
+      console.error('Invalid currency:', currency);
+      return Response.json(
+        { error: 'Invalid currency provided' },
+        { status: 400 }
+      );
+    }
+
+    // For JPY, amount must be a whole number
+    const paymentAmount = currency === 'jpy' ? Math.round(amount) : amount;
     
     // Handle different payment types
     let description = '';
@@ -36,14 +48,15 @@ export async function POST(req: NextRequest) {
     
     if (type === 'subscription') {
       // Subscription payment (existing logic)
-      if (amount !== 799) {
+      const subscriptionAmount = currency === 'jpy' ? 1438 : 799; // 799 pence = ¥1,438
+      if (amount !== subscriptionAmount) {
         console.error('Invalid amount for subscription:', amount);
         return Response.json(
-          { error: 'Invalid amount. Demo subscription is £7.99 (799 pence).' },
+          { error: `Invalid amount. Demo subscription is ${currency === 'jpy' ? '¥1,438' : '£7.99'}.` },
           { status: 400 }
         );
       }
-      description = 'Demo Monthly Subscription - £7.99';
+      description = `Demo Monthly Subscription - ${currency === 'jpy' ? '¥1,438' : '£7.99'}`;
       metadata = {
         type: 'demo_subscription',
         created_at: new Date().toISOString(),
@@ -68,9 +81,9 @@ export async function POST(req: NextRequest) {
     console.log(`Creating payment intent for ${type}...`);
     
     // Create payment intent
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: amount,
-      currency: 'gbp',
+    const paymentIntent = await stripeClient.paymentIntents.create({
+      amount: paymentAmount,
+      currency: currency,
       automatic_payment_methods: {
         enabled: true,
       },
@@ -84,7 +97,7 @@ export async function POST(req: NextRequest) {
       clientSecret: paymentIntent.client_secret,
       paymentIntentId: paymentIntent.id,
       amount: amount,
-      currency: 'gbp',
+      currency: currency,
       status: 'ready',
       type: type,
     });
@@ -94,12 +107,12 @@ export async function POST(req: NextRequest) {
     if (error instanceof Stripe.errors.StripeError) {
       return Response.json(
         { error: `Stripe error: ${error.message}` },
-        { status: 400 }
+        { status: error.statusCode || 500 }
       );
     }
     
     return Response.json(
-      { error: 'Internal server error creating payment intent' },
+      { error: 'An error occurred while processing your payment' },
       { status: 500 }
     );
   }

@@ -2,79 +2,118 @@
 
 import React, { useEffect, useState } from "react";
 import { useStripe, useElements, PaymentElement } from "@stripe/react-stripe-js";
-import convertToSubCurrency from "@/lib/convertToSubCurrency";
+import convertToSubCurrency, { formatCurrency } from "@/lib/convertToSubCurrency";
+import { useLanguage } from "@/context/LanguageContext";
+import { useRouter } from 'next/navigation';
 
+interface CheckoutProps {
+    amount: number;
+    productId?: string;
+}
 
-const Checkout = ({amount}: {amount: number}) => {
+export default function Checkout({ amount, productId }: CheckoutProps) {
     const stripe = useStripe();
     const elements = useElements();
+    const { language } = useLanguage();
+    const router = useRouter();
+    const [isProcessing, setIsProcessing] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
-    const [error, setError] = useState<string>('');
-    const [clientSecret, setClientSecret] = useState<string>();
-    const [loading, setLoading] = useState<boolean>(false);
+    const currency = language === 'ja' ? 'jpy' : 'gbp';
 
-    useEffect(() => {
-        fetch('/api/create-payment-intent', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    amount: convertToSubCurrency(amount)
-                })
-            })
-        .then((res) => res.json())
-        .then((data) => setClientSecret(data.clientSecret));
-    }, [amount]);
-
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setLoading(true);
 
-        if (!stripe || !elements || !clientSecret) {
+        if (!stripe || !elements) {
             return;
-        };
+        }
 
-        const {error: submitError} = await elements.submit();
+        setIsProcessing(true);
+        setError(null);
 
-        if (submitError) {
-            setError(submitError.message as string);
-            setLoading(false);
-
-            return;
-        };
-
-        const {error} = await stripe.confirmPayment({
-            elements,
-            clientSecret,
-            confirmParams: {
-                return_url: `http://localhost:3000/payment-success?amount=${amount}`
+        try {
+            // First, trigger form validation and collection
+            const { error: submitError } = await elements.submit();
+            if (submitError) {
+                throw new Error(submitError.message || 'Form validation failed');
             }
-        });
 
-        if (error && error.message) {
-            setError(error.message);
-        };
+            // Convert amount to the correct currency and format
+            const paymentAmount = convertToSubCurrency(amount, currency, productId);
 
-        setLoading(false);
+            // Create payment intent
+            const response = await fetch('/api/create-payment-intent', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    amount: paymentAmount,
+                    currency: currency,
+                    productId: productId
+                }),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to create payment intent');
+            }
+
+            const { clientSecret } = await response.json();
+
+            // Confirm the payment
+            const { error: confirmError } = await stripe.confirmPayment({
+                elements,
+                clientSecret,
+                confirmParams: {
+                    return_url: `${window.location.origin}/payment-success`,
+                },
+            });
+
+            if (confirmError) {
+                throw new Error(confirmError.message || 'Payment confirmation failed');
+            }
+        } catch (err) {
+            console.error('Payment error:', err);
+            setError(err instanceof Error ? err.message : 'An error occurred while processing your payment');
+        } finally {
+            setIsProcessing(false);
+        }
     };
+
+    // Format display amount
+    const displayAmount = formatCurrency(amount, currency);
 
     return (
         <div>
             <form
                 className="h-full w-1/3 flex flex-col gap-4 items-center p-4 rounded-xl mx-auto mt-44 bg-white/10"
                 onSubmit={handleSubmit}>
-                {clientSecret && <PaymentElement />}
+                <PaymentElement 
+                    className="mb-8"
+                    options={{
+                        layout: 'tabs'
+                    }}
+                />
 
-                {error && <p>{error}</p>}
+                {error && (
+                    <div className="mb-4 p-4 bg-red-900/50 border border-red-500 rounded-xl text-red-200">
+                        {error}
+                    </div>
+                )}
 
                 <button
-                    className="w-full px-4 py-2 rounded-md bg-blue-500 hover:bg-blue-600 cursor-pointer transition disabled:opacity-70 disabled:cursor-not-allowed disabled:animate-pulse"
-                    type='submit'
-                    disabled={!stripe || loading}>
-                    {!loading ? `Pay £${amount}` : 'Processing'}
+                    type="submit"
+                    disabled={!stripe || isProcessing}
+                    className={`
+                        w-full py-4 px-6 rounded-xl text-white font-semibold
+                        ${isProcessing 
+                            ? 'bg-emerald-600 cursor-not-allowed opacity-50' 
+                            : 'bg-emerald-500 hover:bg-emerald-600 transition-colors'}
+                    `}>
+                    {isProcessing ? 'Processing...' : 'Pay Now'}
                 </button>
             </form>
         </div>
     );
-};
-
-export default Checkout;
+}

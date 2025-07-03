@@ -3,7 +3,7 @@
 import { Shield, Check, ArrowLeft } from "lucide-react";
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
-import convertToSubCurrency from '@/lib/convertToSubCurrency';
+import convertToSubCurrency, { formatCurrency } from '@/lib/convertToSubCurrency';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
@@ -19,15 +19,24 @@ if (process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY === undefined) {
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
 
+interface Product {
+  id: string;
+  name: string;
+  price: string;
+  description: string;
+  image: string;
+}
+
 export default function CheckoutPage() {
-  const { translations } = useLanguage();
+  const { translations, language } = useLanguage();
   const searchParams = useSearchParams();
   const productId = searchParams.get('product');
-  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const currency = language === 'ja' ? 'jpy' : 'gbp';
 
   useEffect(() => {
     if (productId && translations.shop?.products) {
-      const product = translations.shop.products[productId];
+      const product = translations.shop.products[productId as keyof typeof translations.shop.products];
       if (product) {
         setSelectedProduct({
           id: productId,
@@ -38,10 +47,11 @@ export default function CheckoutPage() {
     }
   }, [productId, translations]);
 
-  // Extract price number from string (assuming format like "£2.49")
-  const getPrice = (priceString) => {
+  // Extract price number from string (assuming format like "£2.49" or "¥358")
+  const getPrice = (priceString: string): number => {
     if (!priceString) return 0;
-    return parseFloat(priceString.replace(/[£$€]/g, ''));
+    const numericValue = parseFloat(priceString.replace(/[£¥$€]/g, ''));
+    return isNaN(numericValue) ? 0 : numericValue;
   };
 
   const amount = selectedProduct ? getPrice(selectedProduct.price) : 0;
@@ -53,6 +63,9 @@ export default function CheckoutPage() {
       </div>
     );
   }
+
+  // Get the converted amount for Stripe
+  const stripeAmount = convertToSubCurrency(amount, currency, productId || undefined);
 
   return (
     <div className="bg-bg w-screen h-screen flex overflow-hidden">
@@ -91,7 +104,9 @@ export default function CheckoutPage() {
                 <h2 className="text-white text-3xl font-bold mb-2">
                   {selectedProduct.name}
                 </h2>
-                <div className="text-white text-4xl font-semibold mb-4">{selectedProduct.price}</div>
+                <div className="text-white text-4xl font-semibold mb-4">
+                  {formatCurrency(amount, currency, productId || undefined)}
+                </div>
                 
                 <p className="text-gray-300 text-sm mb-6">
                   {selectedProduct.description}
@@ -117,7 +132,9 @@ export default function CheckoutPage() {
               <div className="bg-gray-800 rounded-xl p-4 border border-gray-600">
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-gray-300">Subtotal</span>
-                  <span className="text-white">{selectedProduct.price}</span>
+                  <span className="text-white">
+                    {formatCurrency(amount, currency, productId || undefined)}
+                  </span>
                 </div>
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-gray-300">Delivery</span>
@@ -126,7 +143,9 @@ export default function CheckoutPage() {
                 <div className="border-t border-gray-600 pt-2 mt-2">
                   <div className="flex justify-between items-center">
                     <span className="text-white font-semibold">Total</span>
-                    <span className="text-white font-bold text-lg">{selectedProduct.price}</span>
+                    <span className="text-white font-bold text-lg">
+                      {formatCurrency(amount, currency, productId || undefined)}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -146,30 +165,32 @@ export default function CheckoutPage() {
             
             <div className="flex-1 bg-gray-800 rounded-2xl border border-gray-600 overflow-hidden flex flex-col min-h-0">
               <div className="flex-1 overflow-y-auto">
-                <Elements
-                  stripe={stripePromise}
-                  options={{
-                    mode: 'payment',
-                    amount: convertToSubCurrency(amount),
-                    currency: 'gbp',
-                    appearance: {
-                      theme: 'night',
-                      variables: {
-                        colorPrimary: '#10b981',
-                        colorBackground: '#1f2937',
-                        colorText: '#ffffff',
-                        colorDanger: '#ef4444',
-                        fontFamily: 'system-ui, sans-serif',
-                        spacingUnit: '4px',
-                        borderRadius: '12px'
+                {stripeAmount > 0 && (
+                  <Elements
+                    stripe={stripePromise}
+                    options={{
+                      mode: 'payment',
+                      amount: stripeAmount,
+                      currency: currency,
+                      appearance: {
+                        theme: 'night',
+                        variables: {
+                          colorPrimary: '#10b981',
+                          colorBackground: '#1f2937',
+                          colorText: '#ffffff',
+                          colorDanger: '#ef4444',
+                          fontFamily: 'system-ui, sans-serif',
+                          spacingUnit: '4px',
+                          borderRadius: '12px'
+                        }
                       }
-                    }
-                  }}
-                >
-                  <div className="w-full">
-                    <Checkout amount={amount} />
-                  </div>
-                </Elements>
+                    }}
+                  >
+                    <div className="w-full">
+                      <Checkout amount={amount} />
+                    </div>
+                  </Elements>
+                )}
               </div>
             </div>
             
