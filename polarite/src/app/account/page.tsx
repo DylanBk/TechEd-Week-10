@@ -3,14 +3,50 @@
 import { Settings, Crown, Shield, Check, Calendar, Mail } from "lucide-react";
 import { useState } from "react";
 import { useLanguage } from '@/context/LanguageContext';
+import { formatCurrency } from '@/lib/convertToSubCurrency';
 
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 
+interface Order {
+  id: string;
+  date: string;
+  items: {
+    name: string;
+    quantity: number;
+    price: number;
+    productId: string;
+  }[];
+  total: number;
+}
+
+// Mock order data (prices in pence for GBP)
+const mockOrders: Order[] = [
+  {
+    id: 'ORD-001',
+    date: '2024-03-15',
+    items: [
+      { name: 'Monster Nitro', quantity: 2, price: 199, productId: 'monster_nitro' },
+      { name: 'Monster Ultra', quantity: 1, price: 175, productId: 'monster_ultra' }
+    ],
+    total: 573 // £5.73
+  },
+  {
+    id: 'ORD-002',
+    date: '2024-03-10',
+    items: [
+      { name: 'Polar Plus', quantity: 1, price: 399, productId: 'polar_plus' },
+      { name: 'Monster Juiced', quantity: 2, price: 175, productId: 'monster_juiced' }
+    ],
+    total: 749 // £7.49
+  }
+];
 
 export default function AccountPage() {
   const [activeTab, setActiveTab] = useState('overview');
-  const { translations } = useLanguage();
+  const { translations, language } = useLanguage();
+  const currency = language === 'ja' ? 'jpy' : 'gbp';
+  const [orders] = useState<Order[]>(mockOrders);
 
   const tabs = [
     { id: 'overview', label: translations.pages?.account?.tabs?.overview || 'Overview' },
@@ -18,6 +54,9 @@ export default function AccountPage() {
     { id: 'subscriptions', label: translations.pages?.account?.tabs?.subscriptions || 'Subscriptions' },
     { id: 'settings', label: translations.pages?.account?.tabs?.settings || 'Settings' }
   ];
+
+  // Calculate total spent
+  const totalSpent = orders.reduce((sum, order) => sum + order.total, 0);
 
   return (
     <div className="bg-bg w-screen h-screen flex overflow-hidden">
@@ -97,7 +136,7 @@ export default function AccountPage() {
                     <div className="space-y-4">
                       <div className="flex justify-between items-center">
                         <span className="text-gray-400">{translations.pages?.account?.account_summary?.total_orders}</span>
-                        <span className="text-white font-bold text-lg">8</span>
+                        <span className="text-white font-bold text-lg">{orders.length}</span>
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-gray-400">{translations.pages?.account?.account_summary?.active_subscriptions}</span>
@@ -105,7 +144,7 @@ export default function AccountPage() {
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-gray-400">{translations.pages?.account?.account_summary?.total_spent}</span>
-                        <span className="text-white font-bold text-lg">£60.42</span>
+                        <span className="text-white font-bold text-lg">{formatCurrency(totalSpent / 100, currency)}</span>
                       </div>
                     </div>
                   </div>
@@ -117,109 +156,35 @@ export default function AccountPage() {
               <div className="space-y-6">
                 <h3 className="text-white text-2xl font-bold">Order History</h3>
                 <div className="space-y-4">
-                  <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-6 border border-gray-600">
-                    <div className="flex justify-between items-start mb-4">
-                      <div>
-                        <h4 className="text-white text-lg font-bold">Order #PL-1001</h4>
-                        <p className="text-gray-400">December 16, 2024</p>
-                      </div>
-                      <div className="bg-emerald-500/20 text-emerald-400 px-3 py-1 rounded-full text-sm font-medium border border-emerald-500/30">
-                        Delivered
-                      </div>
-                    </div>
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between py-2 border-b border-gray-700">
-                        <div className="flex items-center space-x-3">
-                          <div className="text-2xl">RB</div>
-                          <div>
-                            <p className="text-white font-medium">Red Bull Energy Drink (4-pack)</p>
-                            <p className="text-gray-400 text-sm">Quantity: 2</p>
-                          </div>
+                  {orders.map((order) => (
+                    <div key={order.id} className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-6 border border-gray-600">
+                      <div className="flex justify-between items-start mb-4">
+                        <div>
+                          <h4 className="text-white text-lg font-bold">Order #{order.id}</h4>
+                          <p className="text-gray-400">{new Date(order.date).toLocaleDateString(language === 'ja' ? 'ja-JP' : 'en-GB')}</p>
                         </div>
-                        <p className="text-white font-medium">£7.98</p>
-                      </div>
-                      <div className="flex items-center justify-between py-2 border-b border-gray-700">
-                        <div className="flex items-center space-x-3">
-                          <div className="text-2xl">MNU</div>
-                          <div>
-                            <p className="text-white font-medium">Monster Energy Ultra (6-pack)</p>
-                            <p className="text-gray-400 text-sm">Quantity: 1</p>
-                          </div>
+                        <div className="bg-emerald-500/20 text-emerald-400 px-3 py-1 rounded-full text-sm font-medium border border-emerald-500/30">
+                          {translations.pages?.account?.completed || 'Completed'}
                         </div>
-                        <p className="text-white font-medium">£8.99</p>
                       </div>
-                    </div>
-                    <div className="flex justify-between items-center pt-4 mt-4 border-t border-gray-600">
-                      <span className="text-gray-400 font-medium">Total</span>
-                      <span className="text-white font-bold text-lg">£16.97</span>
-                    </div>
-                  </div>
-
-                  <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-6 border border-gray-600">
-                    <div className="flex justify-between items-start mb-4">
-                      <div>
-                        <h4 className="text-white text-lg font-bold">Order #PL-1002</h4>
-                        <p className="text-gray-400">December 10, 2024</p>
-                      </div>
-                      <div className="bg-emerald-500/20 text-emerald-400 px-3 py-1 rounded-full text-sm font-medium border border-emerald-500/30">
-                        Delivered
-                      </div>
-                    </div>
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between py-2 border-b border-gray-700">
-                        <div className="flex items-center space-x-3">
-                          <div className="text-2xl">RBSF</div>
-                          <div>
-                            <p className="text-white font-medium">Red Bull Sugarfree (12-pack)</p>
-                            <p className="text-gray-400 text-sm">Quantity: 1</p>
+                      <div className="space-y-3">
+                        {order.items.map((item) => (
+                          <div key={item.name} className="flex items-center justify-between py-2 border-b border-gray-700">
+                            <div className="flex items-center space-x-3">
+                              <div className="text-2xl">{item.name}</div>
+                              <div>
+                                <p className="text-white font-medium">{item.quantity} x {formatCurrency(item.price / 100, currency, item.productId)}</p>
+                              </div>
+                            </div>
                           </div>
-                        </div>
-                        <p className="text-white font-medium">£18.99</p>
+                        ))}
+                      </div>
+                      <div className="flex justify-between items-center pt-4 mt-4 border-t border-gray-600">
+                        <span className="text-gray-400 font-medium">Total</span>
+                        <span className="text-white font-bold text-lg">{formatCurrency(order.total / 100, currency)}</span>
                       </div>
                     </div>
-                    <div className="flex justify-between items-center pt-4 mt-4 border-t border-gray-600">
-                      <span className="text-gray-400 font-medium">Total</span>
-                      <span className="text-white font-bold text-lg">£18.99</span>
-                    </div>
-                  </div>
-
-                  <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-6 border border-gray-600">
-                    <div className="flex justify-between items-start mb-4">
-                      <div>
-                        <h4 className="text-white text-lg font-bold">Order #PL-1003</h4>
-                        <p className="text-gray-400">November 28, 2024</p>
-                      </div>
-                      <div className="bg-emerald-500/20 text-emerald-400 px-3 py-1 rounded-full text-sm font-medium border border-emerald-500/30">
-                        Delivered
-                      </div>
-                    </div>
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between py-2 border-b border-gray-700">
-                        <div className="flex items-center space-x-3">
-                          <div className="text-2xl">MNE</div>
-                          <div>
-                            <p className="text-white font-medium">Monster Energy Original (4-pack)</p>
-                            <p className="text-gray-400 text-sm">Quantity: 3</p>
-                          </div>
-                        </div>
-                        <p className="text-white font-medium">£17.97</p>
-                      </div>
-                      <div className="flex items-center justify-between py-2 border-b border-gray-700">
-                        <div className="flex items-center space-x-3">
-                          <div className="text-2xl">RBT</div>
-                          <div>
-                            <p className="text-white font-medium">Red Bull Tropical (4-pack)</p>
-                            <p className="text-gray-400 text-sm">Quantity: 1</p>
-                          </div>
-                        </div>
-                        <p className="text-white font-medium">£6.49</p>
-                      </div>
-                    </div>
-                    <div className="flex justify-between items-center pt-4 mt-4 border-t border-gray-600">
-                      <span className="text-gray-400 font-medium">Total</span>
-                      <span className="text-white font-bold text-lg">£24.46</span>
-                    </div>
-                  </div>
+                  ))}
                 </div>
               </div>
             )}
@@ -248,23 +213,21 @@ export default function AccountPage() {
                             <div className="w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center flex-shrink-0">
                               <Check size={10} className="text-white" />
                             </div>
-                            <span className="text-gray-300 text-sm">{feature}</span>
+                            <span className="text-gray-300">{feature}</span>
                           </div>
                         ))}
                       </div>
                     </div>
+                    <div className="text-sm text-gray-400">
+                      {translations.shop?.subscriptions?.polar_plus?.note}
+                    </div>
                   </div>
 
-                  {/* Premium Upgrade */}
-                  <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-6 border border-gray-600 relative overflow-hidden">
-                    <div className="absolute top-4 right-4">
-                      <Crown className="text-emerald-500" size={24} />
-                    </div>
-                    <div className="mb-4">
-                      <h4 className="text-white text-xl font-bold mb-1">
-                        {translations.shop?.subscriptions?.polar_premium?.name}
-                      </h4>
-                      <p className="text-gray-400 text-sm">{translations.shop?.subscriptions?.polar_premium?.upgrade_description}</p>
+                  {/* Upgrade Option */}
+                  <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-6 border border-gray-600">
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="text-white text-xl font-bold">{translations.shop?.subscriptions?.polar_premium?.name}</h4>
+                      <Crown size={24} className="text-yellow-500" />
                     </div>
                     <div className="space-y-3 mb-6">
                       <div className="flex justify-between">
@@ -274,62 +237,37 @@ export default function AccountPage() {
                       <div className="space-y-2">
                         {translations.shop?.subscriptions?.polar_premium?.features.map((feature: string, index: number) => (
                           <div key={index} className="flex items-center space-x-3">
-                            <div className="w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center flex-shrink-0">
+                            <div className="w-4 h-4 bg-yellow-500 rounded-full flex items-center justify-center flex-shrink-0">
                               <Check size={10} className="text-white" />
                             </div>
-                            <span className="text-gray-300 text-sm">{feature}</span>
+                            <span className="text-gray-300">{feature}</span>
                           </div>
                         ))}
                       </div>
                     </div>
-                    <Link href="/test" className="w-full bg-white hover:bg-gray-100 text-black py-3 px-6 rounded-xl font-bold transition-all">
+                    <div className="text-sm text-gray-400 mb-6">
+                      {translations.shop?.subscriptions?.polar_premium?.note}
+                    </div>
+                    <button className="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105">
                       {translations.shop?.subscriptions?.polar_premium?.upgrade}
-                    </Link>
+                    </button>
+                    <p className="text-center text-sm text-gray-400 mt-4">
+                      {translations.shop?.subscriptions?.polar_premium?.upgrade_description}
+                    </p>
                   </div>
+
                 </div>
               </div>
             )}
 
             {activeTab === 'settings' && (
               <div className="space-y-6">
-                <h3 className="text-white text-2xl font-bold">Account Settings</h3>
-                
-                <div className="space-y-6">
-                  <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-6 border border-gray-600">
-                    <h4 className="text-white text-lg font-bold mb-4">Profile Information</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-gray-400 text-sm font-medium mb-2">Email Address</label>
-                        <input
-                          type="email"
-                          className="w-full bg-gray-700 border border-gray-600 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors"
-                          defaultValue="user@example.com"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-gray-400 text-sm font-medium mb-2">Phone Number</label>
-                        <input
-                          type="tel"
-                          className="w-full bg-gray-700 border border-gray-600 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors"
-                          placeholder="Enter phone number"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-6 border border-gray-600">
-                    <h4 className="text-white text-lg font-bold mb-4">{translations.pages?.account?.security?.title}</h4>
-                    <div className="space-y-4">
-                      <button className="flex items-center justify-between w-full text-left p-4 bg-gray-700 rounded-xl hover:bg-gray-600 transition-colors border border-gray-600">
-                        <div className="flex items-center space-x-3">
-                          <Shield className="text-gray-400" size={20} />
-                          <div>
-                            <p className="text-white font-medium">{translations.pages?.account?.security?.change_password?.title}</p>
-                            <p className="text-gray-400 text-sm">{translations.pages?.account?.security?.change_password?.description}</p>
-                          </div>
-                        </div>
-                        <Settings className="text-gray-400" size={20} />
-                      </button>
+                <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-6 border border-gray-600">
+                  <h3 className="text-white text-xl font-bold mb-4">{translations.pages?.account?.security?.title}</h3>
+                  <div className="space-y-4">
+                    <div>
+                      <h4 className="text-white font-semibold mb-2">{translations.pages?.account?.security?.change_password?.title}</h4>
+                      <p className="text-gray-400 text-sm">{translations.pages?.account?.security?.change_password?.description}</p>
                     </div>
                   </div>
                 </div>

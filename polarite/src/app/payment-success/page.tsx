@@ -1,96 +1,114 @@
 'use client'
+
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { useLanguage } from '@/context/LanguageContext';
+import { Elements } from '@stripe/react-stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
 import Link from 'next/link';
+import { Check } from 'lucide-react';
 
-export default function PaymentSuccessPage() {
-  const searchParams = useSearchParams()
-  const [paymentDetails, setPaymentDetails] = useState<
-  | {
-    id: string,
-    status: string
-  }
-  | null>(null);
-  
-  // Get payment intent from URL params if redirected from Stripe
-  const payment_intent = searchParams.get('payment_intent');
-  const redirect_status = searchParams.get('redirect_status');
+if (process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY === undefined) {
+  throw new Error('NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY is not defined');
+}
+
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
+
+function PaymentStatusCheck() {
+  const [paymentStatus, setPaymentStatus] = useState<'loading' | 'success' | 'error'>('loading');
+  const searchParams = useSearchParams();
+  const paymentIntentClientSecret = searchParams.get('payment_intent_client_secret');
+  const { translations } = useLanguage();
 
   useEffect(() => {
-    if (payment_intent && redirect_status === 'succeeded') {
-      setPaymentDetails({
-        id: payment_intent,
-        status: 'succeeded'
-      })
+    if (!paymentIntentClientSecret) {
+      setPaymentStatus('error');
+      return;
     }
-  }, [payment_intent, redirect_status])
+
+    stripePromise.then(stripe => {
+      if (!stripe) {
+        setPaymentStatus('error');
+        return;
+      }
+
+      stripe.retrievePaymentIntent(paymentIntentClientSecret)
+        .then(({ paymentIntent }) => {
+          if (paymentIntent && paymentIntent.status === 'succeeded') {
+            setPaymentStatus('success');
+          } else {
+            setPaymentStatus('error');
+          }
+        })
+        .catch(() => {
+          setPaymentStatus('error');
+        });
+    });
+  }, [paymentIntentClientSecret]);
+
+  if (paymentStatus === 'loading') {
+    return (
+      <div className="bg-bg w-screen h-screen flex items-center justify-center">
+        <div className="text-white text-xl">Loading...</div>
+      </div>
+    );
+  }
+
+  if (paymentStatus === 'error') {
+    return (
+      <div className="bg-bg w-screen h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-white text-3xl font-bold mb-4">Payment Failed</h1>
+          <p className="text-gray-400 mb-8">Something went wrong with your payment.</p>
+          <Link 
+            href="/shop"
+            className="inline-block bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-3 px-6 rounded-xl transition-colors"
+          >
+            Return to Shop
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-bg p-8">
-      <div className="max-w-md w-full bg-bg border border-white/20 rounded-xl shadow-2xl p-8 text-center backdrop-blur-sm">
+    <div className="bg-bg w-screen h-screen flex items-center justify-center">
+      <div className="text-center max-w-lg">
         <div className="mb-8">
-          <div className="mx-auto w-20 h-20 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center mb-6 shadow-lg animate-pulse">
-            <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path>
-            </svg>
+          <div className="w-20 h-20 bg-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Check size={32} className="text-white" />
           </div>
-          
-          <h1 className="text-3xl font-bold text-white mb-3 bg-gradient-to-r from-white to-gray-200 bg-clip-text">
-            Payment Successful!
+          <h1 className="text-white text-4xl font-bold mb-4">
+            {translations.payment?.success_title || 'Payment Successful!'}
           </h1>
-          <div className="text-2xl mb-4 animate-bounce">🎉</div>
-          <p className="text-gray-300 leading-relaxed">
-            Thank you for your purchase. Your payment has been processed successfully and you&apos;ll receive a confirmation email shortly.
+          <p className="text-gray-400 mb-8">
+            {translations.payment?.success_message || 'Thank you for your purchase. Your order has been confirmed.'}
           </p>
         </div>
 
-        {paymentDetails && (
-          <div className="bg-white/5 backdrop-blur-sm rounded-lg p-4 mb-8 border border-white/10">
-            <div className="space-y-2">
-              <div className="flex flex-col space-y-1">
-                <span className="text-xs text-gray-400 uppercase tracking-wider">Payment ID</span>
-                <span className="font-mono text-sm text-gray-200 break-all bg-black/20 px-2 py-1 rounded">
-                  {paymentDetails.id}
-                </span>
-              </div>
-              <div className="flex items-center justify-center space-x-2 pt-2">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                <span className="text-sm text-green-400 font-medium capitalize">
-                  {paymentDetails.status}
-                </span>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {!paymentDetails && (
-          <div className="bg-blue-500/10 backdrop-blur-sm rounded-lg p-4 mb-8 border border-blue-500/20">
-            <div className="flex items-center justify-center space-x-2 mb-2">
-              <div className="w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
-              <span className="text-blue-300 text-sm font-medium">Processing</span>
-            </div>
-            <p className="text-blue-200 text-sm">
-              Payment confirmation details will appear here once processed.
-            </p>
-          </div>
-        )}
-
         <div className="space-y-4">
           <Link 
-            href="/dashboard" 
-            className="block w-full bg-white text-black py-4 px-6 rounded-lg font-semibold border-2 border-transparent hover:bg-gray-100 hover:border-white/20 transition-all duration-200 transform hover:scale-[1.02] shadow-lg hover:shadow-xl"
+            href="/shop"
+            className="block w-full bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-3 px-6 rounded-xl transition-colors"
           >
-            Go to Dashboard
+            {translations.payment?.return_to_shop || 'Return to Shop'}
           </Link>
           <Link 
-            href="/" 
-            className="block w-full bg-transparent text-white py-4 px-6 rounded-lg font-semibold border-2 border-white/30 hover:bg-white/10 hover:border-white/50 transition-all duration-200 transform hover:scale-[1.02]"
+            href="/account"
+            className="block w-full bg-gray-700 hover:bg-gray-600 text-white font-semibold py-3 px-6 rounded-xl transition-colors"
           >
-            Back to Home
+            {translations.payment?.view_order || 'View Order'}
           </Link>
         </div>
-
       </div>
     </div>
-  )
+  );
+}
+
+export default function PaymentSuccessPage() {
+  return (
+    <Elements stripe={stripePromise}>
+      <PaymentStatusCheck />
+    </Elements>
+  );
 }
